@@ -1,6 +1,6 @@
 # Spotify Clone
 
-# Technologies stack
+### Technologies stack
 * TypeScript 
 * React
 * Nest
