@@ -19,7 +19,7 @@ export class RolesGuard implements CanActivate {
 	}
 
 	canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-		const requiredRole = this.reflector.getAllAndOverride<string>(RolesConstants.ROLE_KEY, [
+		const requiredRole: string = this.reflector.getAllAndOverride<string>(RolesConstants.ROLE_KEY, [
 			context.getHandler(),
 			context.getClass()
 		]);
@@ -29,7 +29,7 @@ export class RolesGuard implements CanActivate {
 
 		const request = context.switchToHttp().getRequest();
 		const authHeader = request.headers.authorization;
-		const [bearer, token] = authHeader.split(' ');
+		const [bearer, token]: [string, string] = authHeader.split(' ');
 
 		const userJwt = this.jwtService.verify(token, this.configService.get('JWT_SECRET'));
 		const user = this.usersService.findByEmail(userJwt.email);

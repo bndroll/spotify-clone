@@ -6,6 +6,7 @@ import { TypegooseModule } from 'nestjs-typegoose';
 import { getMongoConfig } from './configs/mongo.config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { TracksModule } from './tracks/tracks.module';
 
 
 @Module({
@@ -17,7 +18,8 @@ import { UsersModule } from './users/users.module';
 			useFactory: getMongoConfig
 		}),
 		AuthModule,
-		UsersModule
+		UsersModule,
+		TracksModule
 	],
 	controllers: [AppController],
 	providers: [AppService]
