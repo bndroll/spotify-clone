@@ -1,44 +1,30 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
-import { Role } from '../roles/roles.decorator';
-import { UsersRole } from './users.model';
-import { RolesGuard } from '../roles/roles.guard';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersConstants } from './users.constants';
 
 
 @Controller('users')
 export class UsersController {
-		constructor(private readonly usersService: UsersService) {
+	constructor(private readonly usersService: UsersService) {
 	}
 
-	@Post()
-	create(@Body() createUserDto: CreateUserDto) {
-		return this.usersService.create(createUserDto);
-	}
-
-	@Get()
-	findAll() {
-		return this.usersService.findAll();
-	}
-
-	@Role(UsersRole.MUSICIAN)
 	@UseGuards(JwtAuthGuard)
-	@UseGuards(RolesGuard)
 	@Get(':id')
-	findOne(@Param('id', IdValidationPipe) id: string) {
-		return this.usersService.findById(id);
+	async findOne(@Param('id', IdValidationPipe) id: string) {
+		return await this.usersService.findById(id);
 	}
 
+	@UseGuards(JwtAuthGuard)
 	@Patch(':id')
-	update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-		return this.usersService.update(+id, updateUserDto);
-	}
+	async updateById(@Param('id', IdValidationPipe) id: string, @Body() dto: UpdateUserDto) {
+		const updatedUser = await this.usersService.updateById(id, dto);
 
-	@Delete(':id')
-	remove(@Param('id') id: string) {
-		return this.usersService.remove(+id);
+		if (!updatedUser)
+			throw new NotFoundException(UsersConstants.USER_NOT_FOUND);
+
+		return updatedUser;
 	}
 }

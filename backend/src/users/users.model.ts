@@ -17,9 +17,15 @@ export class UsersModel extends TimeStamps {
 	@prop()
 	name: string;
 
-	@prop({enum: UsersRole, default: 'user'})
+	@prop({enum: UsersRole, default: UsersRole.USER})
 	role: UsersRole;
 
 	@prop()
 	passwordHash: string;
+
+	@prop()
+	photo: string;
+
+	@prop()
+	about: string;
 }

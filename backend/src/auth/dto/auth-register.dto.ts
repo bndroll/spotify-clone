@@ -1,8 +1,9 @@
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, MinLength } from 'class-validator';
 import { UsersRole } from '../../users/users.model';
 
 
 export class AuthRegisterDto {
+	@IsNotEmpty({message: 'Email is required prop'})
 	@IsEmail()
 	email: string;
 
@@ -15,5 +16,6 @@ export class AuthRegisterDto {
 	password: string;
 
 	@IsNotEmpty()
+	@IsEnum(UsersRole, {message: 'Role can only be user or musician'})
 	role: UsersRole;
 }

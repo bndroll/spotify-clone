@@ -7,8 +7,8 @@ import { TracksModel } from './tracks.model';
 import { UsersService } from 'src/users/users.service';
 import { TracksConstants, TracksMediaType } from './tracks.constants';
 import { UsersModel } from '../users/users.model';
-import { trackFilePostRequest } from '../utils/track-file-request.util';
 import { ConfigService } from '@nestjs/config';
+import { tracksFilePostRequest } from '../api/file-system/tracks/tracks-post.request';
 
 
 @Injectable()
@@ -29,7 +29,7 @@ export class TracksService {
 
 		const user: UsersModel = await this.usersService.findById(String(dto.authorId));
 
-		await trackFilePostRequest(
+		await tracksFilePostRequest(
 			{
 				file: files[0],
 				type: TracksMediaType.IMAGE,
@@ -39,7 +39,7 @@ export class TracksService {
 			this.configService
 		);
 
-		await trackFilePostRequest(
+		await tracksFilePostRequest(
 			{
 				file: files[1],
 				type: TracksMediaType.AUDIO,
@@ -49,9 +49,11 @@ export class TracksService {
 			this.configService
 		);
 
+		const [day, month, year] = dto.date.split('-');
+
 		const newTrack = new this.tracksModel({
 			title: dto.title,
-			date: new Date(),
+			date: dto.date ? new Date(Number(year), Number(month), Number(day)) : new Date(),
 			listens: 0,
 			picture: `http://${this.configService.get('FILE_SYSTEM_HOST')}:${this.configService.get('FILE_SYSTEM_PORT')}/files/track/${TracksMediaType.IMAGE}/${user.name}/${dto.title}`,
 			audio: `http://${this.configService.get('FILE_SYSTEM_HOST')}:${this.configService.get('FILE_SYSTEM_PORT')}/files/track/${TracksMediaType.AUDIO}/${user.name}/${dto.title}`,
@@ -67,6 +69,12 @@ export class TracksService {
 
 	async findById(id: string) {
 		return this.tracksModel.findById(id).exec();
+	}
+
+	async listenTrack(id: string) {
+		const track = await this.tracksModel.findById(id);
+		track.listens += 1;
+		return track.save();
 	}
 
 	async deleteById(id: string) {

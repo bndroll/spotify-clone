@@ -22,6 +22,6 @@ export class TracksModel extends TimeStamps {
 	@prop({required: true})
 	audio: string;
 
-	@prop()
+	@prop({required: true})
 	authorId: Types.ObjectId;
 }

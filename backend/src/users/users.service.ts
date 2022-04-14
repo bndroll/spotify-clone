@@ -1,10 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from 'nestjs-typegoose';
 import { UsersModel } from './users.model';
 import { ModelType } from '@typegoose/typegoose/lib/types';
 import { UsersConstants } from './users.constants';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Injectable()
@@ -12,14 +11,6 @@ export class UsersService {
 	constructor(
 		@InjectModel(UsersModel) private readonly usersModel: ModelType<UsersModel>
 	) {
-	}
-
-	create(createUserDto: CreateUserDto) {
-		return 'This action adds a new user';
-	}
-
-	findAll() {
-		return `This action returns all users`;
 	}
 
 	async findById(id: string) {
@@ -40,11 +31,7 @@ export class UsersService {
 		return user;
 	}
 
-	update(id: number, updateUserDto: UpdateUserDto) {
-		return `This action updates a #${id} user`;
-	}
-
-	remove(id: number) {
-		return `This action removes a #${id} user`;
+	async updateById(id: string, dto: UpdateUserDto) {
+		return this.usersModel.findByIdAndUpdate(id, dto, {new: true}).exec();
 	}
 }

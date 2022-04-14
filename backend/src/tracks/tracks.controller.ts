@@ -5,7 +5,7 @@ import {
 	Delete,
 	Get,
 	NotFoundException,
-	Param,
+	Param, Patch,
 	Post,
 	UploadedFiles,
 	UseGuards,
@@ -25,7 +25,9 @@ import { UserIsAuthorGuard } from './guards/user-is-author.guard';
 
 @Controller('tracks')
 export class TracksController {
-	constructor(private readonly tracksService: TracksService) {
+	constructor(
+		private readonly tracksService: TracksService
+	) {
 	}
 
 	@Post()
@@ -50,6 +52,17 @@ export class TracksController {
 			throw new NotFoundException(TracksConstants.TRACK_NOT_FOUND);
 
 		return track;
+	}
+
+	@Patch(':id/listen')
+	@UseGuards(JwtAuthGuard)
+	async listenTrack(@Param('id', IdValidationPipe) id: string) {
+		const track = await this.tracksService.findById(id);
+
+		if (!track)
+			throw new NotFoundException(TracksConstants.TRACK_NOT_FOUND);
+
+		return await this.tracksService.listenTrack(id);
 	}
 
 	@Delete(':id')
