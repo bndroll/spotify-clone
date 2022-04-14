@@ -55,8 +55,8 @@ export class TracksService {
 			title: dto.title,
 			date: dto.date ? new Date(Number(year), Number(month), Number(day)) : new Date(),
 			listens: 0,
-			picture: `http://${this.configService.get('FILE_SYSTEM_HOST')}:${this.configService.get('FILE_SYSTEM_PORT')}/files/track/${TracksMediaType.IMAGE}/${user.name}/${dto.title}`,
-			audio: `http://${this.configService.get('FILE_SYSTEM_HOST')}:${this.configService.get('FILE_SYSTEM_PORT')}/files/track/${TracksMediaType.AUDIO}/${user.name}/${dto.title}`,
+			picture: `http://${this.configService.get('FILE_SYSTEM_HOST')}:${this.configService.get('FILE_SYSTEM_PORT')}/tracks/${TracksMediaType.IMAGE}/${user.name}/${dto.title}`,
+			audio: `http://${this.configService.get('FILE_SYSTEM_HOST')}:${this.configService.get('FILE_SYSTEM_PORT')}/tracks/${TracksMediaType.AUDIO}/${user.name}/${dto.title}`,
 			authorId: dto.authorId
 		});
 
