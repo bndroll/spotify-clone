@@ -17,7 +17,7 @@ export class UsersModel extends TimeStamps {
 	@prop()
 	name: string;
 
-	@prop({enum: UsersRole})
+	@prop({enum: UsersRole, default: 'user'})
 	role: UsersRole;
 
 	@prop()

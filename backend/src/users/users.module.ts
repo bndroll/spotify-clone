@@ -26,7 +26,8 @@ import { getJwtConfig } from '../configs/jwt.config';
 			useFactory: getJwtConfig
 		})
 	],
-	providers: [UsersService]
+	providers: [UsersService],
+	exports: [UsersService]
 })
 export class UsersModule {
 }

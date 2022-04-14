@@ -7,19 +7,19 @@ export interface TracksModel extends Base {
 }
 
 export class TracksModel extends TimeStamps {
-	@prop()
+	@prop({required: true})
 	title: string;
 
-	@prop()
+	@prop({default: new Date()})
 	date: Date;
 
-	@prop()
+	@prop({default: 0})
 	listens: number;
 
-	@prop()
-	pictures: string;
+	@prop({required: true})
+	picture: string;
 
-	@prop()
+	@prop({required: true})
 	audio: string;
 
 	@prop()

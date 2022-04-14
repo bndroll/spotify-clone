@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from 'nestjs-typegoose';
-import { UsersModel } from '../users/users.model';
 import { ModelType } from '@typegoose/typegoose/lib/types';
+import { InjectModel } from 'nestjs-typegoose';
 import { JwtService } from '@nestjs/jwt';
-import { AuthConstants } from './auth.constants';
 import { compare, genSalt, hash } from 'bcryptjs';
+import { UsersModel } from '../users/users.model';
+import { AuthConstants } from './auth.constants';
 import { AuthLoginDto } from './dto/auth-login.dto';
 import { AuthRegisterDto } from './dto/auth-register.dto';
 
