@@ -9,10 +9,6 @@ export class UpdateUserDto {
 
 	@IsString()
 	@IsOptional()
-	photo?: string;
-
-	@IsString()
-	@IsOptional()
 	@MaxLength(350, {message: 'About can contains a maximum of 350 characters'})
 	about?: string;
 }

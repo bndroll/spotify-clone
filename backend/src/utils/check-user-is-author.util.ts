@@ -15,6 +15,6 @@ export const checkUserIsAuthor = async (user: any, track: any) => {
 
 		return userId === trackAuthorId;
 	} catch (e) {
-		throw new BadRequestException(TracksConstants.TRACK_NOT_FOUND);
+		throw new BadRequestException(TracksConstants.NO_CREATE_PERMISSIONS);
 	}
 };

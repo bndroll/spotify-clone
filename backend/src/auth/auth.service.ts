@@ -30,7 +30,9 @@ export class AuthService {
 			email: registerDto.email,
 			name: registerDto.name,
 			role: registerDto.role,
-			passwordHash: await hash(registerDto.password, salt)
+			passwordHash: await hash(registerDto.password, salt),
+			photo: null,
+			about: null
 		});
 
 		return newUser.save();
