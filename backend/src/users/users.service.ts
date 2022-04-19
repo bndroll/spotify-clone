@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from 'nestjs-typegoose';
 import { UsersModel } from './users.model';
-import { ModelType } from '@typegoose/typegoose/lib/types';
+import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
 import { UsersConstants } from './users.constants';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ConfigService } from '@nestjs/config';
@@ -17,7 +17,7 @@ export class UsersService {
 	) {
 	}
 
-	async findById(id: string) {
+	async findById(id: string): Promise<DocumentType<UsersModel>> {
 		const user = await this.usersModel.findById(id).exec();
 
 		if (!user)
@@ -35,7 +35,7 @@ export class UsersService {
 		return user;
 	}
 
-	async updateById(id: string, dto: UpdateUserDto) {
+	async updateById(id: string, dto: UpdateUserDto): Promise<DocumentType<UsersModel>> {
 		const user: UsersModel = await this.findById(id);
 
 		let userName = user.name;
@@ -55,7 +55,7 @@ export class UsersService {
 		return this.usersModel.findByIdAndUpdate(id, resultDto, {new: true}).exec();
 	}
 
-	async updatePhotoById(id: string, file: Express.Multer.File) {
+	async updatePhotoById(id: string, file: Express.Multer.File): Promise<DocumentType<UsersModel>> {
 		const user: UsersModel = await this.findById(id);
 
 		await photoFilePostRequest({

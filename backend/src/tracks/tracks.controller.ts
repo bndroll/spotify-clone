@@ -8,6 +8,7 @@ import {
 	Param,
 	Patch,
 	Post,
+	Query,
 	UploadedFiles,
 	UseGuards,
 	UseInterceptors
@@ -21,7 +22,8 @@ import { RolesGuard } from '../roles/roles.guard';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
 import { TracksConstants } from './tracks.constants';
-import { UserIsAuthorGuard } from './guards/user-is-author.guard';
+import { UserIsAuthorGuard } from '../users/guards/user-is-author.guard';
+import { User } from '../users/decorators/users.decorator';
 
 
 @Controller('tracks')
@@ -45,7 +47,14 @@ export class TracksController {
 		return await this.tracksService.create(files, dto);
 	}
 
+	@Get()
+	@UseGuards(JwtAuthGuard)
+	async findAll(@Query('limit') limit?: string) {
+		return await this.tracksService.findAll(Number(limit));
+	}
+
 	@Get(':id')
+	@UseGuards(JwtAuthGuard)
 	async findById(@Param('id', IdValidationPipe) id: string) {
 		const track = await this.tracksService.findById(id);
 
@@ -53,6 +62,26 @@ export class TracksController {
 			throw new NotFoundException(TracksConstants.TRACK_NOT_FOUND);
 
 		return track;
+	}
+
+	@Get('favorites/find')
+	@UseGuards(JwtAuthGuard)
+	async findFavorites(@User('id') userId: string) {
+		return await this.tracksService.findFavorites(userId);
+	}
+
+	@Patch('favorites/:id')
+	@UseGuards(JwtAuthGuard)
+	async likeTrack(
+		@User('id') userId: string,
+		@Param('id', IdValidationPipe) id: string) {
+
+		const track = await this.tracksService.findById(id);
+
+		if (!track)
+			throw new BadRequestException(TracksConstants.TRACK_NOT_FOUND);
+
+		return await this.tracksService.likeSong(userId, id);
 	}
 
 	@Patch(':id/listen')

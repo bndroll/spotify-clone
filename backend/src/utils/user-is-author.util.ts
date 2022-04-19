@@ -2,7 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { TracksConstants } from '../tracks/tracks.constants';
 
 
-export const checkUserIsAuthor = async (user: any, track: any) => {
+export const userIsAuthor = async (user: any, track: any) => {
 	try {
 		const userId = await user
 			.then(res => res[0])

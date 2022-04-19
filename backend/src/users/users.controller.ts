@@ -15,11 +15,14 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersConstants } from './users.constants';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserIsUserGuard } from './guards/user-is-user.guard';
 
 
 @Controller('users')
 export class UsersController {
-	constructor(private readonly usersService: UsersService) {
+	constructor(
+		private readonly usersService: UsersService
+	) {
 	}
 
 	@Get(':id')
@@ -30,6 +33,7 @@ export class UsersController {
 
 	@Patch(':id')
 	@UseGuards(JwtAuthGuard)
+	@UseGuards(UserIsUserGuard)
 	async updateById(
 		@Param('id', IdValidationPipe) id: string,
 		@Body() dto: UpdateUserDto) {
@@ -44,6 +48,7 @@ export class UsersController {
 
 	@Patch(':id/photo')
 	@UseGuards(JwtAuthGuard)
+	@UseGuards(UserIsUserGuard)
 	@UseInterceptors(FileInterceptor('file'))
 	async updatePhotoById(
 		@UploadedFile() file: Express.Multer.File,

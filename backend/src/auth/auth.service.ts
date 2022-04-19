@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { ModelType } from '@typegoose/typegoose/lib/types';
+import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
 import { InjectModel } from 'nestjs-typegoose';
 import { JwtService } from '@nestjs/jwt';
 import { compare, genSalt, hash } from 'bcryptjs';
@@ -18,7 +18,7 @@ export class AuthService {
 	) {
 	}
 
-	async register(registerDto: AuthRegisterDto) {
+	async register(registerDto: AuthRegisterDto): Promise<DocumentType<UsersModel>> {
 		const oldUser = await this.findUser(registerDto.email);
 
 		if (oldUser)
@@ -38,7 +38,7 @@ export class AuthService {
 		return newUser.save();
 	}
 
-	async login(loginDto: AuthLoginDto) {
+	async login(loginDto: AuthLoginDto): Promise<{ access_token: string }> {
 		const payload = await this.validateUser(loginDto.email, loginDto.password);
 
 		return {
@@ -50,7 +50,7 @@ export class AuthService {
 		return this.usersModel.findOne({email}).exec();
 	}
 
-	async validateUser(email: string, password: string): Promise<Pick<UsersModel, 'email'>> {
+	async validateUser(email: string, password: string) {
 		const user = await this.findUser(email);
 
 		if (!user)
@@ -62,6 +62,7 @@ export class AuthService {
 			throw new UnauthorizedException(AuthConstants.WRONG_PASSWORD);
 
 		return {
+			id: user._id,
 			email: user.email
 		};
 	}

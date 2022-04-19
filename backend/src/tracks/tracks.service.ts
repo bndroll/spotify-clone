@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ModelType } from '@typegoose/typegoose/lib/types';
+import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
 import { InjectModel } from 'nestjs-typegoose';
 import { Types } from 'mongoose';
 import { CreateTrackDto } from './dto/create-track.dto';
@@ -21,7 +21,7 @@ export class TracksService {
 	) {
 	}
 
-	async create(files: Array<Express.Multer.File>, dto: CreateTrackDto) {
+	async create(files: Array<Express.Multer.File>, dto: CreateTrackDto): Promise<DocumentType<TracksModel>> {
 		const oldTrack = await this.findTrackByTitleAndAuthorName(dto.title, dto.authorId);
 
 		if (oldTrack)
@@ -63,21 +63,45 @@ export class TracksService {
 		return newTrack.save();
 	}
 
-	async findTrackByTitleAndAuthorName(title: string, authorId: Types.ObjectId) {
-		return this.tracksModel.findOne({title, authorId}).exec();
+	async findAll(limit: number = 10): Promise<DocumentType<TracksModel>[]> {
+		return this.tracksModel.find().sort({_id: -1}).limit(limit).exec();
 	}
 
-	async findById(id: string) {
-		return this.tracksModel.findById(id).exec();
+	async findTrackByTitleAndAuthorName(title: string, authorId: Types.ObjectId): Promise<DocumentType<TracksModel>> {
+		return await this.tracksModel.findOne({title, authorId}).exec();
 	}
 
-	async listenTrack(id: string) {
+	async findById(id: string): Promise<DocumentType<TracksModel>> {
+		return await this.tracksModel.findById(id).exec();
+	}
+
+	async findFavorites(userId: string) {
+		const user = await this.usersService.findById(userId);
+
+		return user.likedSongs;
+	}
+
+	async likeSong(userId: string, trackId: string) {
+		const user = await this.usersService.findById(userId);
+		const track = await this.findById(trackId);
+
+		if (user.likedSongs.has(track.id))
+			user.likedSongs.delete(track.id);
+		else
+			user.likedSongs.set(track.id, track);
+
+		await user.save();
+
+		return user.likedSongs;
+	}
+
+	async listenTrack(id: string): Promise<DocumentType<TracksModel>> {
 		const track = await this.tracksModel.findById(id);
 		track.listens += 1;
-		return track.save();
+		return await track.save();
 	}
 
-	async deleteById(id: string) {
-		return this.tracksModel.findByIdAndDelete(id).exec();
+	async deleteById(id: string): Promise<DocumentType<TracksModel>> {
+		return await this.tracksModel.findByIdAndDelete(id).exec();
 	}
 }
