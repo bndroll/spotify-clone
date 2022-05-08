@@ -1,20 +1,19 @@
 import { BadRequestException } from '@nestjs/common';
-import { TracksConstants } from '../tracks/tracks.constants';
+import { UserIsAuthorConstants } from '../types/user-is-author-constants.type';
 
 
-export const userIsAuthor = async (user: any, track: any) => {
-	try {
-		const userId = await user
-			.then(res => res[0])
-			.then(res => res._id)
-			.then(res => res.toString());
+export const userIsAuthor = async (userId: string, entity: any, messageConstants: UserIsAuthorConstants): Promise<boolean> => {
+	const authorId = await entity
+		.then(res => {
+			if (!res)
+				throw new BadRequestException(messageConstants.NOT_FOUND);
 
-		const trackAuthorId = await track
-			.then(res => res.authorId)
-			.then(res => res.toString());
+			return res.authorId;
+		})
+		.then(res => res.toString());
 
-		return userId === trackAuthorId;
-	} catch (e) {
-		throw new BadRequestException(TracksConstants.NO_CREATE_PERMISSIONS);
-	}
+	if (userId !== authorId)
+		throw new BadRequestException(messageConstants.NO_PERMISSIONS);
+
+	return true;
 };

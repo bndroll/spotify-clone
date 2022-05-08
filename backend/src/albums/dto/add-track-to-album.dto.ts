@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 
-export class CreateTrackDto {
+export class AddTrackToAlbumDto {
 	@IsString()
 	@IsNotEmpty()
 	title: string;

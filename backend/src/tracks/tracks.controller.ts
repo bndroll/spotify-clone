@@ -13,16 +13,16 @@ import {
 	UseGuards,
 	UseInterceptors
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { TracksService } from './tracks.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { Role } from '../roles/roles.decorator';
 import { UsersRole } from '../users/users.model';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../roles/roles.guard';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
 import { TracksConstants } from './tracks.constants';
-import { UserIsAuthorGuard } from '../users/guards/user-is-author.guard';
+import { UserIsTrackAuthorGuard } from '../users/guards/user-is-track-author.guard';
 import { User } from '../users/decorators/users.decorator';
 
 
@@ -38,13 +38,17 @@ export class TracksController {
 	@UseGuards(JwtAuthGuard)
 	@UseGuards(RolesGuard)
 	@UseInterceptors(FilesInterceptor('files'))
-	async create(@UploadedFiles() files: Array<Express.Multer.File>, @Body() dto: CreateTrackDto) {
-		const oldTrack = await this.tracksService.findTrackByTitleAndAuthorName(dto.title, dto.authorId);
+	async create(
+		@UploadedFiles() files: Array<Express.Multer.File>,
+		@Body() dto: CreateTrackDto,
+		@User('id') userId: string) {
+
+		const oldTrack = await this.tracksService.findByTitleAndAuthor(dto.title, userId);
 
 		if (oldTrack)
 			throw new BadRequestException(TracksConstants.TRACK_ALREADY_EXIST);
 
-		return await this.tracksService.create(files, dto);
+		return await this.tracksService.create(files, dto, userId);
 	}
 
 	@Get()
@@ -60,6 +64,9 @@ export class TracksController {
 
 		if (!track)
 			throw new NotFoundException(TracksConstants.TRACK_NOT_FOUND);
+
+		if (!track.isAccessible)
+			throw new NotFoundException(TracksConstants.TRACK_NOT_ACCESSIBLE);
 
 		return track;
 	}
@@ -81,6 +88,9 @@ export class TracksController {
 		if (!track)
 			throw new BadRequestException(TracksConstants.TRACK_NOT_FOUND);
 
+		if (track.isAccessible === false)
+			throw new BadRequestException(TracksConstants.TRACK_NOT_ACCESSIBLE);
+
 		return await this.tracksService.likeSong(userId, id);
 	}
 
@@ -92,19 +102,23 @@ export class TracksController {
 		if (!track)
 			throw new NotFoundException(TracksConstants.TRACK_NOT_FOUND);
 
+		if (track.isAccessible === false)
+			throw new BadRequestException(TracksConstants.TRACK_NOT_ACCESSIBLE);
+
 		return await this.tracksService.listenTrack(id);
 	}
 
 	@Delete(':id')
-	@Role(UsersRole.MUSICIAN)
 	@UseGuards(JwtAuthGuard)
-	@UseGuards(RolesGuard)
-	@UseGuards(UserIsAuthorGuard)
+	@UseGuards(UserIsTrackAuthorGuard)
 	async deleteById(@Param('id', IdValidationPipe) id: string) {
 		const track = await this.tracksService.findById(id);
 
 		if (!track)
 			throw new NotFoundException(TracksConstants.TRACK_NOT_FOUND);
+
+		if (track.albumId)
+			throw new BadRequestException(TracksConstants.TRACK_IN_ALBUM);
 
 		return await this.tracksService.deleteById(id);
 	}

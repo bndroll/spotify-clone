@@ -9,12 +9,12 @@ import {
 	UseGuards,
 	UseInterceptors
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { IdValidationPipe } from '../pipes/id-validation.pipe';
 import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersConstants } from './users.constants';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { UserIsUserGuard } from './guards/user-is-user.guard';
 
 
@@ -27,8 +27,13 @@ export class UsersController {
 
 	@Get(':id')
 	@UseGuards(JwtAuthGuard)
-	async findOne(@Param('id', IdValidationPipe) id: string) {
-		return await this.usersService.findById(id);
+	async findById(@Param('id', IdValidationPipe) id: string) {
+		const user = await this.usersService.findById(id);
+
+		if (!user)
+			throw new NotFoundException(UsersConstants.USER_NOT_FOUND);
+
+		return user;
 	}
 
 	@Patch(':id')

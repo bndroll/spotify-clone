@@ -1,7 +1,7 @@
-import { TracksMediaType } from '../../../tracks/tracks.constants';
 import { ConfigService } from '@nestjs/config';
 import * as FormData from 'form-data';
 import axios from 'axios';
+import { TracksMediaType } from '../../../tracks/tracks.constants';
 
 
 export interface TracksFilePostRequestDto {

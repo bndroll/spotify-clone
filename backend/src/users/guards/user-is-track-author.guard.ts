@@ -2,14 +2,15 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { UsersService } from '../users.service';
 import { Observable } from 'rxjs';
+import { UsersService } from '../users.service';
 import { TracksService } from '../../tracks/tracks.service';
 import { userIsAuthor } from '../../utils/user-is-author.util';
+import { TracksConstants } from '../../tracks/tracks.constants';
 
 
 @Injectable()
-export class UserIsAuthorGuard implements CanActivate {
+export class UserIsTrackAuthorGuard implements CanActivate {
 	constructor(
 		private readonly reflector: Reflector,
 		private readonly jwtService: JwtService,
@@ -25,9 +26,11 @@ export class UserIsAuthorGuard implements CanActivate {
 		const [_, token]: [string, string] = authHeader.split(' ');
 
 		const userJwt = this.jwtService.verify(token, this.configService.get('JWT_SECRET'));
-		const user = this.usersService.findById(userJwt.id);
 		const track = this.tracksService.findById(request.params.id);
 
-		return userIsAuthor(user, track);
+		return userIsAuthor(userJwt.id, track, {
+			NOT_FOUND: TracksConstants.TRACK_NOT_FOUND,
+			NO_PERMISSIONS: TracksConstants.NO_PERMISSIONS
+		});
 	}
 }

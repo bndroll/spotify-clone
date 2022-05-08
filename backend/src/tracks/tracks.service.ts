@@ -1,13 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from 'nestjs-typegoose';
+import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
 import { Types } from 'mongoose';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { TracksModel } from './tracks.model';
 import { UsersService } from 'src/users/users.service';
-import { TracksConstants, TracksMediaType } from './tracks.constants';
+import { TracksMediaType } from './tracks.constants';
 import { UsersModel } from '../users/users.model';
-import { ConfigService } from '@nestjs/config';
 import { tracksFilePostRequest } from '../api/file-system/tracks/tracks-post.request';
 
 
@@ -21,16 +21,10 @@ export class TracksService {
 	) {
 	}
 
-	async create(files: Array<Express.Multer.File>, dto: CreateTrackDto): Promise<DocumentType<TracksModel>> {
-		const oldTrack = await this.findTrackByTitleAndAuthorName(dto.title, dto.authorId);
+	async create(files: Array<Express.Multer.File>, dto: CreateTrackDto, userId: string): Promise<DocumentType<TracksModel>> {
+		const user: UsersModel = await this.usersService.findById(userId);
 
-		if (oldTrack)
-			throw new BadRequestException(TracksConstants.TRACK_ALREADY_EXIST);
-
-		const user: UsersModel = await this.usersService.findById(String(dto.authorId));
-
-		await tracksFilePostRequest(
-			{
+		await tracksFilePostRequest({
 				file: files[0],
 				type: TracksMediaType.IMAGE,
 				trackTitle: dto.title,
@@ -39,8 +33,7 @@ export class TracksService {
 			this.configService
 		);
 
-		await tracksFilePostRequest(
-			{
+		await tracksFilePostRequest({
 				file: files[1],
 				type: TracksMediaType.AUDIO,
 				trackTitle: dto.title,
@@ -49,41 +42,76 @@ export class TracksService {
 			this.configService
 		);
 
-		const [day, month, year] = dto.date.split('-');
+		let date: Date;
+
+		if (dto.date) {
+			const [day, month, year] = dto.date.split('-');
+			date = new Date(Number(year), Number(month), Number(day));
+		}
 
 		const newTrack = new this.tracksModel({
 			title: dto.title,
-			date: dto.date ? new Date(Number(year), Number(month), Number(day)) : new Date(),
+			date: dto.date ? date : new Date(),
 			listens: 0,
 			picture: `/tracks/${TracksMediaType.IMAGE}/${user.name}/${dto.title}`,
 			audio: `/tracks/${TracksMediaType.AUDIO}/${user.name}/${dto.title}`,
-			authorId: dto.authorId
+			authorId: userId
 		});
 
 		return newTrack.save();
 	}
 
 	async findAll(limit: number = 10): Promise<DocumentType<TracksModel>[]> {
-		return this.tracksModel.find().sort({_id: -1}).limit(limit).exec();
+		return this.tracksModel
+			.find({isAccessible: true})
+			.sort({_id: -1})
+			.limit(limit)
+			.exec();
 	}
 
-	async findTrackByTitleAndAuthorName(title: string, authorId: Types.ObjectId): Promise<DocumentType<TracksModel>> {
+	async findByTitleAndAuthor(title: string, authorId: string): Promise<DocumentType<TracksModel>> {
 		return await this.tracksModel.findOne({title, authorId}).exec();
 	}
 
 	async findById(id: string): Promise<DocumentType<TracksModel>> {
-		return await this.tracksModel.findById(id).exec();
+		return this.tracksModel.findById(id).exec();
 	}
 
-	async findFavorites(userId: string) {
+	async findFavorites(userId: string): Promise<DocumentType<TracksModel>[]> {
 		const user = await this.usersService.findById(userId);
+		const likedSongs = [];
 
-		return user.likedSongs;
+		for (const likedSong of user.likedSongs.values()) {
+			const song = await this.findById(String(likedSong));
+
+			if (!song) {
+				await this.likeSong(userId, String(likedSong));
+				continue;
+			}
+
+			likedSongs.push(await this.findById(String(likedSong)));
+		}
+
+		return likedSongs;
+	}
+
+	async openTrack(id: string): Promise<void> {
+		const track = await this.findById(id);
+		track.isAccessible = true;
+		await track.save();
 	}
 
 	async likeSong(userId: string, trackId: string) {
 		const user = await this.usersService.findById(userId);
 		const track = await this.findById(trackId);
+
+		const checkedTrackId = new Types.ObjectId(trackId);
+
+		if (!track) {
+			user.likedSongs.delete(checkedTrackId);
+			await user.save();
+			return user.likedSongs;
+		}
 
 		if (user.likedSongs.has(track.id))
 			user.likedSongs.delete(track.id);

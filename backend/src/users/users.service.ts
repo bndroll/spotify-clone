@@ -1,10 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from 'nestjs-typegoose';
-import { UsersModel } from './users.model';
-import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
-import { UsersConstants } from './users.constants';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { ConfigService } from '@nestjs/config';
+import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
+import { UsersModel } from './users.model';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { photoFilePostRequest } from '../api/file-system/profile/photo-post.request';
 
 
@@ -18,21 +17,7 @@ export class UsersService {
 	}
 
 	async findById(id: string): Promise<DocumentType<UsersModel>> {
-		const user = await this.usersModel.findById(id).exec();
-
-		if (!user)
-			throw new NotFoundException(UsersConstants.USER_NOT_FOUND);
-
-		return user;
-	}
-
-	async findByEmail(email: string) {
-		const user = await this.usersModel.find({email}).exec();
-
-		if (!user)
-			throw new NotFoundException(UsersConstants.USER_NOT_FOUND);
-
-		return user;
+		return await this.usersModel.findById(id).exec();
 	}
 
 	async updateById(id: string, dto: UpdateUserDto): Promise<DocumentType<UsersModel>> {

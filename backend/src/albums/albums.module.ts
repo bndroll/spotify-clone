@@ -1,17 +1,27 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { JwtModule } from '@nestjs/jwt';
 import { TypegooseModule } from 'nestjs-typegoose';
-import { TracksService } from './tracks.service';
-import { TracksController } from './tracks.controller';
-import { TracksModel } from './tracks.model';
+import { JwtModule } from '@nestjs/jwt';
+import { AlbumsService } from './albums.service';
+import { AlbumsController } from './albums.controller';
 import { getJwtConfig } from '../configs/jwt.config';
 import { UsersModule } from '../users/users.module';
+import { TracksModule } from '../tracks/tracks.module';
+import { AlbumsModel } from './albums.model';
+import { TracksModel } from '../tracks/tracks.model';
 
 
 @Module({
-	controllers: [TracksController],
+	controllers: [AlbumsController],
 	imports: [
+		TypegooseModule.forFeature([
+			{
+				typegooseClass: AlbumsModel,
+				schemaOptions: {
+					collection: 'Albums'
+				}
+			}
+		]),
 		TypegooseModule.forFeature([
 			{
 				typegooseClass: TracksModel,
@@ -26,10 +36,10 @@ import { UsersModule } from '../users/users.module';
 			inject: [ConfigService],
 			useFactory: getJwtConfig
 		}),
-		UsersModule
+		UsersModule,
+		TracksModule
 	],
-	providers: [TracksService],
-	exports: [TracksService]
+	providers: [AlbumsService]
 })
-export class TracksModule {
+export class AlbumsModule {
 }

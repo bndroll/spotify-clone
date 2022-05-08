@@ -3,13 +3,13 @@ import * as FormData from 'form-data';
 import axios from 'axios';
 
 
-export interface PlaylistsFilePostRequestDto {
+export interface AlbumsFilePostRequestDto {
 	file: Express.Multer.File;
 	authorName: string;
 	title: string
 }
 
-export const playlistsFilePostRequestDto = async (dto: PlaylistsFilePostRequestDto, configService: ConfigService) => {
+export const albumsFilePostRequestDto = async (dto: AlbumsFilePostRequestDto, configService: ConfigService) => {
 	const formData = new FormData();
 
 	formData.append('file', Buffer.from(dto.file.buffer), dto.file.originalname);
@@ -17,7 +17,7 @@ export const playlistsFilePostRequestDto = async (dto: PlaylistsFilePostRequestD
 	formData.append('title', dto.title);
 
 	return await axios.post(
-		`http://${configService.get('FILE_SYSTEM_HOST')}:${configService.get('FILE_SYSTEM_PORT')}/playlists`,
+		`http://${configService.get('FILE_SYSTEM_HOST')}:${configService.get('FILE_SYSTEM_PORT')}/albums`,
 		formData,
 		{headers: formData.getHeaders()})
 		.then(res => res.data);

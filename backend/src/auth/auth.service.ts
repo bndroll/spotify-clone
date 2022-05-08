@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { DocumentType, ModelType } from '@typegoose/typegoose/lib/types';
 import { InjectModel } from 'nestjs-typegoose';
 import { JwtService } from '@nestjs/jwt';
@@ -19,20 +19,13 @@ export class AuthService {
 	}
 
 	async register(registerDto: AuthRegisterDto): Promise<DocumentType<UsersModel>> {
-		const oldUser = await this.findUser(registerDto.email);
-
-		if (oldUser)
-			throw new BadRequestException(AuthConstants.ALREADY_REGISTERED);
-
 		const salt = await genSalt(10);
 
 		const newUser = new this.usersModel({
 			email: registerDto.email,
 			name: registerDto.name,
 			role: registerDto.role,
-			passwordHash: await hash(registerDto.password, salt),
-			photo: null,
-			about: null
+			passwordHash: await hash(registerDto.password, salt)
 		});
 
 		return newUser.save();
@@ -46,12 +39,12 @@ export class AuthService {
 		};
 	}
 
-	async findUser(email: string) {
+	async findByEmail(email: string) {
 		return this.usersModel.findOne({email}).exec();
 	}
 
 	async validateUser(email: string, password: string) {
-		const user = await this.findUser(email);
+		const user = await this.findByEmail(email);
 
 		if (!user)
 			throw new UnauthorizedException(AuthConstants.USER_NOT_FOUND);

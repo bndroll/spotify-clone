@@ -1,5 +1,5 @@
 import { Base, TimeStamps } from '@typegoose/typegoose/lib/defaultClasses';
-import { prop, Ref } from '@typegoose/typegoose';
+import { index, prop, Ref } from '@typegoose/typegoose';
 import { TracksModel } from '../tracks/tracks.model';
 
 
@@ -11,6 +11,7 @@ export enum UsersRole {
 export interface UsersModel extends Base {
 }
 
+@index({name: 'text'})
 export class UsersModel extends TimeStamps {
 	@prop({unique: true})
 	email: string;
@@ -24,10 +25,10 @@ export class UsersModel extends TimeStamps {
 	@prop()
 	passwordHash: string;
 
-	@prop()
+	@prop({default: null})
 	photo?: string;
 
-	@prop()
+	@prop({default: null})
 	about?: string;
 
 	@prop({ref: () => TracksModel, type: () => TracksModel, default: new Map()})
