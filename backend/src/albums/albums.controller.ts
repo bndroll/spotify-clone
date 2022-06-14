@@ -58,8 +58,14 @@ export class AlbumsController {
 
 	@Get()
 	@UseGuards(JwtAuthGuard)
-	async findAll(@Query('limit') limit?: string) {
-		return await this.albumsService.findAll(Number(limit));
+	async findAll() {
+		return await this.albumsService.findAll();
+	}
+
+	@Get('/find/closable')
+	@UseGuards(JwtAuthGuard)
+	async findNotAccessible() {
+		return await this.albumsService.findNotAccessible();
 	}
 
 	@Get(':id')

@@ -53,8 +53,14 @@ export class TracksController {
 
 	@Get()
 	@UseGuards(JwtAuthGuard)
-	async findAll(@Query('limit') limit?: string) {
-		return await this.tracksService.findAll(Number(limit));
+	async findAll() {
+		return await this.tracksService.findAll();
+	}
+
+	@Get('/find/closable')
+	@UseGuards(JwtAuthGuard)
+	async findAllClosable() {
+		return await this.tracksService.findAllClosable();
 	}
 
 	@Get(':id')

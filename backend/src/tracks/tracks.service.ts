@@ -61,11 +61,17 @@ export class TracksService {
 		return newTrack.save();
 	}
 
-	async findAll(limit: number = 10): Promise<DocumentType<TracksModel>[]> {
+	async findAll(): Promise<DocumentType<TracksModel>[]> {
 		return this.tracksModel
 			.find({isAccessible: true})
 			.sort({_id: -1})
-			.limit(limit)
+			.exec();
+	}
+
+	async findAllClosable(): Promise<DocumentType<TracksModel>[]> {
+		return this.tracksModel
+			.find({isAccessible: false})
+			.sort({_id: -1})
 			.exec();
 	}
 
@@ -120,7 +126,7 @@ export class TracksService {
 
 		await user.save();
 
-		return user.likedSongs;
+		return track;
 	}
 
 	async listenTrack(id: string): Promise<DocumentType<TracksModel>> {

@@ -55,11 +55,17 @@ export class AlbumsService {
 		return newAlbum.save();
 	}
 
-	async findAll(limit: number = 10): Promise<DocumentType<AlbumsModel>[]> {
+	async findAll(): Promise<DocumentType<AlbumsModel>[]> {
 		return this.albumsModel
 			.find({isAccessible: true})
 			.sort({_id: -1})
-			.limit(limit)
+			.exec();
+	}
+
+	async findNotAccessible(): Promise<DocumentType<AlbumsModel>[]> {
+		return this.albumsModel
+			.find({isAccessible: false})
+			.sort({_id: -1})
 			.exec();
 	}
 

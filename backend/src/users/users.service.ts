@@ -20,6 +20,10 @@ export class UsersService {
 		return await this.usersModel.findById(id).exec();
 	}
 
+	async findMusicians(): Promise<DocumentType<UsersModel>[]> {
+		return await this.usersModel.find({role: 'musician'}).exec();
+	}
+
 	async updateById(id: string, dto: UpdateUserDto): Promise<DocumentType<UsersModel>> {
 		const user: UsersModel = await this.findById(id);
 

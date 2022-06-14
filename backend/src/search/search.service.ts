@@ -16,31 +16,29 @@ export class SearchService {
 	}
 
 	async search(text: string) {
-		const result = [];
+		const result = {
+			tracks: [],
+			albums: [],
+			users: []
+		};
 
-		result.push(
-			await this.tracksModel
-				.find({title: {'$regex': text, '$options': 'i'}, isAccessible: true})
-				.sort({_id: -1})
-				.limit(4)
-				.exec()
-		);
+		result.tracks = await this.tracksModel
+			.find({title: {'$regex': text, '$options': 'i'}, isAccessible: true})
+			.sort({_id: -1})
+			.limit(4)
+			.exec();
 
-		result.push(
-			await this.albumsModel
-				.find({title: {'$regex': text, '$options': 'i'}, isAccessible: true})
-				.sort({_id: -1})
-				.limit(4)
-				.exec()
-		);
+		result.albums = await this.albumsModel
+			.find({title: {'$regex': text, '$options': 'i'}, isAccessible: true})
+			.sort({_id: -1})
+			.limit(4)
+			.exec();
 
-		result.push(
-			await this.usersModel
-				.find({name: {'$regex': text, '$options': 'i'}, role: 'musician'})
-				.sort({_id: -1})
-				.limit(4)
-				.exec()
-		);
+		result.users = await this.usersModel
+			.find({name: {'$regex': text, '$options': 'i'}, role: 'musician'})
+			.sort({_id: -1})
+			.limit(4)
+			.exec();
 
 		return result;
 	}

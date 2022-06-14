@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt.guard';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UsersConstants } from './users.constants';
 import { UserIsUserGuard } from './guards/user-is-user.guard';
+import { User } from './decorators/users.decorator';
 
 
 @Controller('users')
@@ -25,10 +26,27 @@ export class UsersController {
 	) {
 	}
 
+	@Get('musicians')
+	@UseGuards(JwtAuthGuard)
+	async findMusicians() {
+		return await this.usersService.findMusicians();
+	}
+
 	@Get(':id')
 	@UseGuards(JwtAuthGuard)
-	async findById(@Param('id', IdValidationPipe) id: string) {
+	async findMusicianById(@Param('id', IdValidationPipe) id: string) {
 		const user = await this.usersService.findById(id);
+
+		if (!user || user.role === 'user')
+			throw new NotFoundException(UsersConstants.USER_NOT_FOUND);
+
+		return user;
+	}
+
+	@Get('find/me')
+	@UseGuards(JwtAuthGuard)
+	async findMe(@User('id') userId: string) {
+		const user = await this.usersService.findById(userId);
 
 		if (!user)
 			throw new NotFoundException(UsersConstants.USER_NOT_FOUND);
